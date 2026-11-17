@@ -1,0 +1,29 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field67_wheat_2016",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2016,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "Friedrichshausen",
+    "adm_unit4": "Sievershausen",
+    "adm_unit5": "Friedrichsh\u00e4user_Stra\u00dfe",
+    "country": "Germany"
+  },
+  "seeding_date": "17.09.2015",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "15.08.2016",
+  "area_ground_truth": 32.12,
+  "yield_ground_truth": 9.3,
+  "area_calculated": 32.568002,
+  "centroid_latitude_wgs84": 51.76108506,
+  "centroid_longitude_wgs84": 9.66797712,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

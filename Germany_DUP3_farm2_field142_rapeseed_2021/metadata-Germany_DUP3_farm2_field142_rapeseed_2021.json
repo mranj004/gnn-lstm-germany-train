@@ -1,0 +1,27 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field142_rapeseed_2021",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2021,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Hoppensen",
+    "adm_unit3": "L_547",
+    "country": "Germany"
+  },
+  "seeding_date": "29.08.2020",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "08.08.2021",
+  "area_ground_truth": 10.79,
+  "yield_ground_truth": 4.34,
+  "area_calculated": 13.548816,
+  "centroid_latitude_wgs84": 51.78867599,
+  "centroid_longitude_wgs84": 9.77047496,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

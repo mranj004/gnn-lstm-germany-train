@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field123_wheat_2018",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2018,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Einbeck",
+    "adm_unit3": "Dassensen",
+    "adm_unit4": "K_510",
+    "country": "Germany"
+  },
+  "seeding_date": "16.09.2017",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "30.07.2018",
+  "area_ground_truth": 8.92,
+  "yield_ground_truth": 7.72,
+  "area_calculated": 8.95616,
+  "centroid_latitude_wgs84": 51.78992986,
+  "centroid_longitude_wgs84": 9.82115924,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

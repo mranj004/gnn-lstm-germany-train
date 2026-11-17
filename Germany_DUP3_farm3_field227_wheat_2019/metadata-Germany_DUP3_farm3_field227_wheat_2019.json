@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm3",
+  "field_shared_name": "Germany_DUP3_farm3_field227_wheat_2019",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2019,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "Anhalt-Bitterfeld"
+  },
+  "seeding_date": "17.10.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "27.07.2019",
+  "area_ground_truth": 20.4391,
+  "yield_ground_truth": 4.7624406162698,
+  "area_calculated": 20.508392,
+  "centroid_longitude_wgs84": 12.112046358209607,
+  "centroid_latitude_wgs84": 52.06061129074619,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "quality_density": "bad",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

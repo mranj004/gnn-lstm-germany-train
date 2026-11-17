@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field210_wheat_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Moringen",
+    "country": "Germany"
+  },
+  "seeding_date": "17.11.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "08.08.2022",
+  "area_ground_truth": 15.44,
+  "yield_ground_truth": 8.64,
+  "area_calculated": 15.495712,
+  "centroid_latitude_wgs84": 51.71503168,
+  "centroid_longitude_wgs84": 9.87105726,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

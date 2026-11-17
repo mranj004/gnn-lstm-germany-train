@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm4",
+  "field_shared_name": "Germany_DUP3_farm4_field241_wheat_2018",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2018,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "Jerichower Land"
+  },
+  "seeding_date": "12.09.2017",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "10.07.2018",
+  "area_ground_truth": 21.7569,
+  "yield_ground_truth": 6.943085,
+  "area_calculated": 21.735041000000002,
+  "centroid_longitude_wgs84": 11.897106186368246,
+  "centroid_latitude_wgs84": 52.13369347161779,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "quality_density": "bad",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

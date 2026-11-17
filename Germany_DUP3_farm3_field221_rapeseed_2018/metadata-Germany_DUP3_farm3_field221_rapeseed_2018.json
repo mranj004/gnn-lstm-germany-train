@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm3",
+  "field_shared_name": "Germany_DUP3_farm3_field221_rapeseed_2018",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2018,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "Anhalt-Bitterfeld"
+  },
+  "seeding_date": "28.08.2017",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "02.07.2018",
+  "area_ground_truth": 69.2308,
+  "yield_ground_truth": 2.85151984376896,
+  "area_calculated": 68.99730100000001,
+  "centroid_longitude_wgs84": 12.06271088203132,
+  "centroid_latitude_wgs84": 52.02678093058201,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm1",
+  "field_shared_name": "Germany_DUP3_farm1_field42_wheat_2019",
+  "projected_crs_epsg": 32633,
+  "crop": "wheat",
+  "year": 2019,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Mecklenburg-Vorpommern",
+    "adm_2": "Vorpommern-Greifswald"
+  },
+  "seeding_date": "15.09.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "29.07.2019",
+  "area_ground_truth": 67,
+  "yield_ground_truth": 9.8089552238806,
+  "area_calculated": 66.155571,
+  "centroid_longitude_wgs84": 13.686417565775002,
+  "centroid_latitude_wgs84": 53.51487165946286,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

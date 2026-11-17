@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm6",
+  "field_shared_name": "Germany_DUP3_farm6_field281_rapeseed_2019",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2019,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "B\u00f6rde"
+  },
+  "seeding_date": "07.09.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "27.07.2019",
+  "area_ground_truth": 6.8,
+  "yield_ground_truth": 3.74,
+  "area_calculated": 6.827927000000001,
+  "centroid_longitude_wgs84": 11.122102230303316,
+  "centroid_latitude_wgs84": 52.15920600898557,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

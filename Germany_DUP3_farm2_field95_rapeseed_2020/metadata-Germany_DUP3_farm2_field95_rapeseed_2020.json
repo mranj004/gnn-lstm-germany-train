@@ -1,0 +1,27 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field95_rapeseed_2020",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2020,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Einbeck",
+    "adm_unit3": "Holtensen",
+    "country": "Germany"
+  },
+  "seeding_date": "02.09.2019",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "01.08.2020",
+  "area_ground_truth": 8.15,
+  "yield_ground_truth": 4.8,
+  "area_calculated": 8.289745,
+  "centroid_latitude_wgs84": 51.79178561,
+  "centroid_longitude_wgs84": 9.80084645,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

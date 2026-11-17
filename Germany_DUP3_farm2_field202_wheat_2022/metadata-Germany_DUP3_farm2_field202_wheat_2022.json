@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field202_wheat_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "N\u00f6rten-Hardenberg",
+    "adm_unit3": "Wolbrechtshausen",
+    "adm_unit4": "Wolbrechtsh\u00e4user_Weg",
+    "country": "Germany"
+  },
+  "seeding_date": "13.10.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "11.08.2022",
+  "area_ground_truth": 4.48,
+  "yield_ground_truth": 10.54,
+  "area_calculated": 4.440982,
+  "centroid_latitude_wgs84": 51.6261009,
+  "centroid_longitude_wgs84": 9.90222954,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

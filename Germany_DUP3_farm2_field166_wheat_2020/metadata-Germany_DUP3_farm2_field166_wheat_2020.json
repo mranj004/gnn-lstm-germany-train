@@ -1,0 +1,27 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field166_wheat_2020",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2020,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "L_547",
+    "country": "Germany"
+  },
+  "seeding_date": "13.10.2019",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "07.08.2020",
+  "area_ground_truth": 8.23,
+  "yield_ground_truth": 9.75,
+  "area_calculated": 8.588628,
+  "centroid_latitude_wgs84": 51.78446358,
+  "centroid_longitude_wgs84": 9.77374595,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm6",
+  "field_shared_name": "Germany_DUP3_farm6_field287_wheat_2016",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2016,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "B\u00f6rde"
+  },
+  "seeding_date": "29.09.2015",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "20.07.2016",
+  "area_ground_truth": 32.48,
+  "yield_ground_truth": 8.87,
+  "area_calculated": 33.026643,
+  "centroid_longitude_wgs84": 11.155151605305042,
+  "centroid_latitude_wgs84": 52.295541409646304,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

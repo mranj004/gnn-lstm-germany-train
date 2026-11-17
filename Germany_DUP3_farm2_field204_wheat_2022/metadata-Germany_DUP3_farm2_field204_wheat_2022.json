@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field204_wheat_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "N\u00f6rten-Hardenberg",
+    "adm_unit3": "Parensen",
+    "adm_unit4": "Stemmeweg",
+    "country": "Germany"
+  },
+  "seeding_date": "18.10.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "09.08.2022",
+  "area_ground_truth": 12.85,
+  "yield_ground_truth": 10.08,
+  "area_calculated": 12.970573,
+  "centroid_latitude_wgs84": 51.62150858,
+  "centroid_longitude_wgs84": 9.8910414,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}
