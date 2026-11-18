@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field103_wheat_2019",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2019,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "N\u00f6rten-Hardenberg",
+    "adm_unit3": "Parensen",
+    "adm_unit4": "Dreckweg",
+    "country": "Germany"
+  },
+  "seeding_date": "27.09.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "27.07.2019",
+  "area_ground_truth": 12.91,
+  "yield_ground_truth": 8.33,
+  "area_calculated": 13.188792,
+  "centroid_latitude_wgs84": 51.62151161,
+  "centroid_longitude_wgs84": 9.89105453,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

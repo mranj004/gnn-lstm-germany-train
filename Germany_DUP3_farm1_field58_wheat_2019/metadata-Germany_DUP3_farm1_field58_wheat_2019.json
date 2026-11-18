@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm1",
+  "field_shared_name": "Germany_DUP3_farm1_field58_wheat_2019",
+  "projected_crs_epsg": 32633,
+  "crop": "wheat",
+  "year": 2019,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Mecklenburg-Vorpommern",
+    "adm_2": "Mecklenburgische Seenplatte"
+  },
+  "seeding_date": "10.09.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "20.08.2019",
+  "area_ground_truth": 32,
+  "yield_ground_truth": 8.490625,
+  "area_calculated": 30.515636,
+  "centroid_longitude_wgs84": 13.643199348127297,
+  "centroid_latitude_wgs84": 53.50771368193889,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

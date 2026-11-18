@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm1",
+  "field_shared_name": "Germany_DUP3_farm1_field14_rapeseed_2016",
+  "projected_crs_epsg": 32633,
+  "crop": "rapeseed",
+  "year": 2016,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Mecklenburg-Vorpommern",
+    "adm_2": "Mecklenburgische Seenplatte"
+  },
+  "seeding_date": "02.09.2015",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "21.07.2016",
+  "area_ground_truth": 30,
+  "yield_ground_truth": 1.35666666666667,
+  "area_calculated": 27.607815000000002,
+  "centroid_longitude_wgs84": 13.647763369183979,
+  "centroid_latitude_wgs84": 53.55537038101834,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

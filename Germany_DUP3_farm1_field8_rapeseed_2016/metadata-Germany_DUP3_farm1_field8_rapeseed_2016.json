@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm1",
+  "field_shared_name": "Germany_DUP3_farm1_field8_rapeseed_2016",
+  "projected_crs_epsg": 32633,
+  "crop": "rapeseed",
+  "year": 2016,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Mecklenburg-Vorpommern",
+    "adm_2": "Vorpommern-Greifswald"
+  },
+  "seeding_date": "21.08.2015",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "22.07.2016",
+  "area_ground_truth": 33,
+  "yield_ground_truth": 3.05454545454545,
+  "area_calculated": 27.179967,
+  "centroid_longitude_wgs84": 13.68304517643984,
+  "centroid_latitude_wgs84": 53.53969857067955,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

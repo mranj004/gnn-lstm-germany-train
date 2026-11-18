@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field133_wheat_2019",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2019,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Northeim",
+    "adm_unit3": "Schnedinghausen",
+    "adm_unit4": "Northeimer_Weg",
+    "country": "Germany"
+  },
+  "seeding_date": "30.10.2018",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "14.08.2019",
+  "area_ground_truth": 11.58,
+  "yield_ground_truth": 9.11,
+  "area_calculated": 11.939393,
+  "centroid_latitude_wgs84": 51.6921072,
+  "centroid_longitude_wgs84": 9.92143059,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

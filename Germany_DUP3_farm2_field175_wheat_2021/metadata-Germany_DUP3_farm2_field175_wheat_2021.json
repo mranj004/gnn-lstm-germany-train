@@ -1,0 +1,29 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field175_wheat_2021",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2021,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Einbeck",
+    "adm_unit3": "Iber",
+    "adm_unit4": "D\u00f6rrigsen",
+    "adm_unit5": "Vor_den_H\u00e4usern",
+    "country": "Germany"
+  },
+  "seeding_date": "24.09.2020",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "31.07.2021",
+  "area_ground_truth": 6.53,
+  "yield_ground_truth": 7.85,
+  "area_calculated": 6.588844,
+  "centroid_latitude_wgs84": 51.74777611,
+  "centroid_longitude_wgs84": 9.86195539,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field154_wheat_2021",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2021,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Moringen",
+    "adm_unit3": "Gro\u00dfenrode",
+    "adm_unit4": "K_424",
+    "country": "Germany"
+  },
+  "seeding_date": "25.09.2020",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "21.08.2021",
+  "area_ground_truth": 5.02,
+  "yield_ground_truth": 7.47,
+  "area_calculated": 5.021207,
+  "centroid_latitude_wgs84": 51.67841834,
+  "centroid_longitude_wgs84": 9.90935644,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

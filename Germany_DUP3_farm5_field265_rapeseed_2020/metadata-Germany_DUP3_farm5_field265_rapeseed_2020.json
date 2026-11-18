@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm5",
+  "field_shared_name": "Germany_DUP3_farm5_field265_rapeseed_2020",
+  "projected_crs_epsg": 32633,
+  "crop": "rapeseed",
+  "year": 2020,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Mecklenburg-Vorpommern",
+    "adm_2": "Landkreis Rostock"
+  },
+  "seeding_date": "01.09.2019",
+  "seeding_date_type": "333 days before harvest",
+  "harvesting_date": "30.07.2020",
+  "area_ground_truth": 69.54,
+  "yield_ground_truth": 2.892,
+  "area_calculated": 69.357483,
+  "centroid_longitude_wgs84": 12.758502357093207,
+  "centroid_latitude_wgs84": 53.927503237855866,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "good",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

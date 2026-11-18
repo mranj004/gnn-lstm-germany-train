@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field181_wheat_2017",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2017,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Einbeck",
+    "adm_unit3": "D\u00f6rrigsen",
+    "adm_unit4": "Brenneckewiese",
+    "country": "Germany"
+  },
+  "seeding_date": "19.09.2016",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "31.07.2017",
+  "area_ground_truth": 5.36,
+  "yield_ground_truth": 8.5,
+  "area_calculated": 5.476687,
+  "centroid_latitude_wgs84": 51.75564501,
+  "centroid_longitude_wgs84": 9.85465389,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

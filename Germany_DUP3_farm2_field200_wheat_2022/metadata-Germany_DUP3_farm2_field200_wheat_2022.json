@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field200_wheat_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "Markoldendorf",
+    "adm_unit4": "L_547",
+    "country": "Germany"
+  },
+  "seeding_date": "07.10.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "27.07.2022",
+  "area_ground_truth": 17.31,
+  "yield_ground_truth": 11.52,
+  "area_calculated": 17.404867,
+  "centroid_latitude_wgs84": 51.79541497,
+  "centroid_longitude_wgs84": 9.76178145,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

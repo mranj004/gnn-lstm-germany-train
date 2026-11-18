@@ -1,0 +1,26 @@
+{
+  "farm_identifier": "farm4",
+  "field_shared_name": "Germany_DUP3_farm4_field259_rapeseed_2017",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2017,
+  "adm_units": {
+    "country": "Germany",
+    "adm_1": "Saxony-Anhalt",
+    "adm_2": "Jerichower Land"
+  },
+  "seeding_date": "25.08.2016",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "29.07.2017",
+  "area_ground_truth": 48.7,
+  "yield_ground_truth": 3.37141683778234,
+  "area_calculated": 48.64445,
+  "centroid_longitude_wgs84": 11.857291465270517,
+  "centroid_latitude_wgs84": 52.081719700011675,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "quality_density": "bad",
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Bad"
+}

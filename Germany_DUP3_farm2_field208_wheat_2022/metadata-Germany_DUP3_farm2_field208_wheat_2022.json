@@ -1,0 +1,29 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field208_wheat_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "Hoppensen",
+    "adm_unit4": "Hoppenser_Allee",
+    "adm_unit5": "Flugplatz_Hoppensen",
+    "country": "Germany"
+  },
+  "seeding_date": "27.10.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "28.07.2022",
+  "area_ground_truth": 9.14,
+  "yield_ground_truth": 10.31,
+  "area_calculated": 9.173071,
+  "centroid_latitude_wgs84": 51.78663688,
+  "centroid_longitude_wgs84": 9.75441821,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Good"
+}

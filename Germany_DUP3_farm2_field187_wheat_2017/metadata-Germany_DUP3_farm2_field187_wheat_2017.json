@@ -1,0 +1,29 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field187_wheat_2017",
+  "projected_crs_epsg": 32632,
+  "crop": "wheat",
+  "year": 2017,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "Ellensen",
+    "adm_unit4": "K_504",
+    "adm_unit5": "Kirche_am_Rittergut",
+    "country": "Germany"
+  },
+  "seeding_date": "05.10.2016",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "15.08.2017",
+  "area_ground_truth": 7.81,
+  "yield_ground_truth": 8.79,
+  "area_calculated": 7.908975,
+  "centroid_latitude_wgs84": 51.79353594,
+  "centroid_longitude_wgs84": 9.76437966,
+  "standard_moisture": 15,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 20,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}

@@ -1,0 +1,28 @@
+{
+  "farm_identifier": "farm2",
+  "field_shared_name": "Germany_DUP3_farm2_field199_rapeseed_2022",
+  "projected_crs_epsg": 32632,
+  "crop": "rapeseed",
+  "year": 2022,
+  "adm_units": {
+    "adm_unit0": "Lower_Saxony",
+    "adm_unit1": "Landkreis_Northeim",
+    "adm_unit2": "Dassel",
+    "adm_unit3": "Friedrichshausen",
+    "adm_unit4": "3",
+    "country": "Germany"
+  },
+  "seeding_date": "06.09.2021",
+  "seeding_date_type": "provided_by_farmer",
+  "harvesting_date": "04.08.2022",
+  "area_ground_truth": 31.87,
+  "yield_ground_truth": 4.68,
+  "area_calculated": 32.095464,
+  "centroid_latitude_wgs84": 51.76106786,
+  "centroid_longitude_wgs84": 9.66795226,
+  "standard_moisture": 9,
+  "min_yield_per_hectare": 0,
+  "max_yield_per_hectare": 10,
+  "data_provider": "DUP3",
+  "yieldmap_quality": "Average"
+}
