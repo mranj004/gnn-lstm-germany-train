@@ -43,15 +43,40 @@ From the outer repository root, use a Python environment with these packages:
 
 ```powershell
 python -m pip install -r yieldsat.github.io/GNN-Comp/requirements.txt
-python yieldsat.github.io/GNN-Comp/train.py --data "C:/data/preprocessed-24-ts/Germany/merged/merge_s2-soil-dem-weather-coords.nc" --crop rapeseed --folds 5 --epochs 15 --batch-size 1 --output-dir runs/gnn_lstm
+python yieldsat.github.io/GNN-Comp/train.py --folds 5 --epochs 15 --batch-size 1
 ```
 
-Replace the data path with your actual NetCDF file. The dataset is not included
-in this repository. The command selects the original 12 Sentinel-2 bands;
-override them with `--bands B02 B03 B04 B08`, for example. All selected bands
-must exist in the dataset. Feature count is inferred from that selection.
+The defaults use `data/` beside `train.py`, select **Germany rapeseed**, and use
+only the 12 Sentinel-2 bands as model inputs. Soil, DEM, weather, coordinates,
+and yield statistics are not input features. Override the S2 band subset with
+`--bands B02 B03 B04 B08`, for example. Feature count follows that selection.
+`--data` and `--output-dir` resolve relative to the script directory, independent
+of the working directory. Absolute paths are also accepted. The default output
+is `yieldsat.github.io/GNN-Comp/runs/germany_rapeseed_s2/`.
 
-Input schema:
+The local raw-data layout is:
+
+```text
+data/<field-season>/
+  metadata-<field-season>.json
+  s2_images/S2_L2A_YYYYMMDD.tif
+  yield_masks/mean_scaled_yield_masked_regional_statistical_outlier.tif
+```
+
+Metadata selects country/crop before raster loading. Images from seeding through
+harvest are averaged into 24 equal-duration intervals (`--time-steps` overrides
+this). Nodata observations are excluded from each mean; empty bins become the
+existing -1 missing-feature value. S2 values retain their original stored scale;
+no additional cloud filtering is applied. Band descriptions identify the bands.
+The mean yield raster supplies pixel targets, reprojected with nearest-neighbor
+sampling onto the S2 grid, and nodata targets are excluded. S2 grids must match
+within each field. Crop/year suffixes are removed from raw field names for CV
+grouping, keeping repeated seasons of a field together. All selected sequences
+are loaded into memory before training.
+
+A merged NetCDF can still be passed with `--data`; it must include a `country`
+variable with string labels or encoded IDs mapped to labels in its attributes.
+Temporal bins are used only for raw images. The NetCDF input schema is:
 
 - `sample(index, time_step, band)`: feature sequences; dimension order is handled explicitly.
 - `target(index)`: finite pixel yield targets.
@@ -91,7 +116,7 @@ estimates; use a separate test set or nested CV when tuning hyperparameters.
 ## Evaluate saved predictions
 
 ```powershell
-python yieldsat.github.io/GNN-Comp/eval.py --predictions runs/gnn_lstm/cv_predictions.csv --output-dir runs/gnn_lstm/evaluation --plots
+python yieldsat.github.io/GNN-Comp/eval.py --predictions yieldsat.github.io/GNN-Comp/runs/germany_rapeseed_s2/cv_predictions.csv --output-dir yieldsat.github.io/GNN-Comp/runs/germany_rapeseed_s2/evaluation --plots
 ```
 
 This saves metrics, field/year aggregates, scatter plots and yield

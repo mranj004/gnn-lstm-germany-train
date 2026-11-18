@@ -16,6 +16,8 @@ from graphs import collate_graphs
 from model import GNN_LSTM_Model
 from prepareFold import split_dataset_by_group
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+
 
 def model_training(model, train_loader, criterion, optimizer, device):
     model.train()
@@ -69,9 +71,12 @@ def model_validation(model, val_loader, criterion, device, BEST_R2_SCORE=-float(
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", type=Path, required=True, help="Merged YieldSAT NetCDF file")
+    parser.add_argument("--data", type=Path, default=Path("data"),
+                        help="Field data directory or merged NetCDF; relative to this script")
+    parser.add_argument("--country", default="Germany")
     parser.add_argument("--crop", default="rapeseed", help="Crop label in crop.attrs")
-    parser.add_argument("--bands", nargs="+", default=list(DEFAULT_BANDS))
+    parser.add_argument("--bands", nargs="+", choices=DEFAULT_BANDS, default=list(DEFAULT_BANDS))
+    parser.add_argument("--time-steps", type=int, default=24, help="Growing-season bins for raw S2 images")
     parser.add_argument("--folds", type=int, default=10)
     parser.add_argument("--epochs", type=int, default=15)
     parser.add_argument("--batch-size", type=int, default=1, help="Number of whole field/year graphs")
@@ -85,10 +90,17 @@ def parse_args(argv=None):
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="auto", help="auto, cpu, cuda, or a torch device")
-    parser.add_argument("--output-dir", type=Path, default=Path("runs/gnn_lstm"))
+    parser.add_argument("--output-dir", type=Path, default=Path("runs/germany_rapeseed_s2"),
+                        help="New output directory; relative to this script")
     args = parser.parse_args(argv)
     if args.epochs < 1 or args.batch_size < 1 or args.num_workers < 0 or args.learning_rate <= 0:
         parser.error("epochs, batch-size and learning-rate must be positive; num-workers must be nonnegative")
+    if args.time_steps < 1:
+        parser.error("time-steps must be positive")
+    for name in ("data", "output_dir"):
+        value = getattr(args, name)
+        if not value.is_absolute():
+            setattr(args, name, SCRIPT_DIR / value)
     return args
 
 
@@ -99,7 +111,8 @@ def run_cross_validation(args):
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
     ) if args.device == "auto" else torch.device(args.device)
-    dataset = load_dataset(args.data, crop=args.crop, bands=args.bands)
+    dataset = load_dataset(args.data, crop=args.crop, bands=args.bands,
+                           country=args.country, time_steps=args.time_steps)
     splits = split_dataset_by_group(dataset, args.folds)
     # A run has its own directory so checkpoints and metrics cannot be overwritten accidentally.
     args.output_dir.mkdir(parents=True, exist_ok=False)
@@ -148,6 +161,8 @@ def run_cross_validation(args):
             "model_state_dict": {k: v.detach().cpu() for k, v in model.state_dict().items()},
             "model_config": model_config, "bands": list(args.bands),
             "connectivity": args.connectivity, "crop": args.crop,
+            "country": args.country, "time_steps": args.time_steps,
+            "temporal_aggregation": "growing_season_mean" if args.data.is_dir() else "preprocessed",
             "fill_value": train_dataset.fill_value, "cv_fold": fold, "epoch": args.epochs,
             "train_indices": train_indices, "val_indices": val_indices,
         }, args.output_dir / f"fold_{fold}.pt")

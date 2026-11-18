@@ -1,6 +1,8 @@
 ﻿"""Run with: python -m unittest discover -s yieldsat.github.io/GNN-Comp -v."""
 
 from pathlib import Path
+import json
+import os
 import tempfile
 import unittest
 
@@ -30,6 +32,7 @@ def synthetic_dataset():
             "row": ("index", np.zeros(n, dtype="uint8")),
             "col": ("index", np.tile([0, 1, 2], 8).astype("uint8")),
             "crop": ("index", np.repeat([1, 1, 1, 2], 6)),
+            "country": ("index", np.repeat("Germany", n)),
         },
         coords={"index": [f"p{i}" for i in range(n)], "time_step": np.arange(4), "band": ["B01", "B02"]},
     ).assign_attrs(description="Synthetic test data")
@@ -42,6 +45,74 @@ class GNNLSTMTests(unittest.TestCase):
 
     def setUp(self):
         torch.manual_seed(5)
+
+    def test_relative_paths_are_independent_of_working_directory(self):
+        original = Path.cwd()
+        with tempfile.TemporaryDirectory() as directory:
+            try:
+                os.chdir(directory)
+                args = parse_args([])
+                self.assertEqual(args.data, Path(__file__).resolve().parent / "data")
+                self.assertEqual(args.output_dir, Path(__file__).resolve().parent / "runs/germany_rapeseed_s2")
+                self.assertEqual((args.country, args.crop), ("Germany", "rapeseed"))
+            finally:
+                os.chdir(original)
+
+    def test_raw_s2_filtering_temporal_bins_and_training(self):
+        import rasterio
+        from rasterio.transform import from_origin
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for country, crop, field, year in [
+                ("Germany", "rapeseed", "field1", 2020),
+                ("Germany", "rapeseed", "field1", 2021),
+                ("Germany", "rapeseed", "field2", 2020),
+                ("Germany", "wheat", "field3", 2020),
+                ("France", "rapeseed", "field4", 2020),
+            ]:
+                name = f"{country}_farm1_{field}_{crop}_{year}"
+                folder = root / name
+                folder.mkdir()
+                (folder / f"metadata-{name}.json").write_text(json.dumps({
+                    "adm_units": {"country": country}, "crop": crop, "year": year,
+                    "field_shared_name": name,
+                    "seeding_date": f"01.01.{year}", "harvesting_date": f"09.01.{year}",
+                }))
+                # Excluded crops/countries intentionally have no raster files.
+                if country != "Germany" or crop != "rapeseed":
+                    continue
+                (folder / "s2_images").mkdir()
+                (folder / "yield_masks").mkdir()
+                profile = dict(driver="GTiff", height=2, width=2, count=1,
+                               dtype="float32", crs="EPSG:32633",
+                               transform=from_origin(400000, 5900000, 10, 10), nodata=-1)
+                with rasterio.open(folder / "yield_masks/mean_scaled_yield_masked_regional_statistical_outlier.tif", "w", **profile) as dst:
+                    dst.write(np.array([[1, 2], [3, -1]], dtype="float32"), 1)
+                for date, value in [(f"{year}0101", 2), (f"{year}0102", 4),
+                                    (f"{year}0109", 8), (f"{year}0110", 100)]:
+                    with rasterio.open(folder / f"s2_images/S2_L2A_{date}.tif", "w", **profile) as dst:
+                        values = np.full((2, 2), value, dtype="float32")
+                        values[1, 0] = -1
+                        dst.write(values, 1)
+                        dst.set_band_description(1, "B02 - Blue")
+            ds = load_dataset(root, country="Germany", bands=["B02"], time_steps=2)
+            self.assertEqual(dict(ds.sizes), {"index": 9, "time_step": 2, "band": 1})
+            np.testing.assert_allclose(ds["sample"].values[0, :, 0], [3, 8])
+            self.assertTrue(np.isnan(ds["sample"].values[2]).all())
+            self.assertEqual(len(np.unique(ds.field_shared_name)), 2)
+            self.assertEqual(len(YieldSATDataset(ds, band=None)), 3)
+            for training, validation in split_dataset_by_group(ds, 2):
+                self.assertTrue(set(ds.sel(index=training).field_shared_name.values).isdisjoint(
+                    ds.sel(index=validation).field_shared_name.values))
+            args = parse_args([
+                "--data", str(root), "--bands", "B02", "--time-steps", "2",
+                "--folds", "2", "--epochs", "1", "--hidden-dim", "4",
+                "--gnn-hidden-dim", "4", "--device", "cpu", "--output-dir", str(root / "run"),
+            ])
+            predictions = run_cross_validation(args)
+            self.assertEqual(len(predictions), 9)
+            self.assertTrue(np.isfinite(predictions.prediction).all())
 
     def test_grid_topology_and_unsigned_coordinates(self):
         edges = build_grid_graph(np.array([0, 0, 1], dtype="uint8"), [0, 1, 1], 4)
