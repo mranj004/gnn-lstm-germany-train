@@ -1,0 +1,10 @@
+{
+  "A": {"description": "Original GNN-LSTM, raw stored scale", "args": []},
+  "B": {"description": "Plain LSTM; compare with A", "args": ["--model", "lstm"]},
+  "C": {"description": "Training-fold S2 normalization; compare with A", "args": ["--normalize"]},
+  "D": {"description": "One spatial layer; compare with A", "args": ["--gnn-layers", "1"]},
+  "E": {"description": "Four-neighbor graph; compare with A", "args": ["--connectivity", "4"]},
+  "F": {"description": "Residual spectral concatenation; compare with A", "args": ["--residual"]},
+  "G": {"description": "Residual plus temporal attention; compare with F", "args": ["--residual", "--temporal-pool", "attention"]},
+  "H": {"description": "Direction-sensitive GNN; compare with A", "args": ["--aggregation", "directional"]}
+}

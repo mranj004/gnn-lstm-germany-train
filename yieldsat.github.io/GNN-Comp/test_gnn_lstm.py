@@ -83,6 +83,7 @@ class GNNLSTMTests(unittest.TestCase):
                 if country != "Germany" or crop != "rapeseed":
                     continue
                 (folder / "s2_images").mkdir()
+                (folder / "scl_masks").mkdir()
                 (folder / "yield_masks").mkdir()
                 profile = dict(driver="GTiff", height=2, width=2, count=1,
                                dtype="float32", crs="EPSG:32633",
@@ -96,10 +97,18 @@ class GNNLSTMTests(unittest.TestCase):
                         values[1, 0] = -1
                         dst.write(values, 1)
                         dst.set_band_description(1, "B02 - Blue")
+                    with rasterio.open(folder / f"scl_masks/S2_L2A_SCL_{date}.tif", "w", **profile) as dst:
+                        scl = np.full((2, 2), 4, dtype="float32")
+                        scl[0, 0] = 9
+                        dst.write(scl, 1)
             ds = load_dataset(root, country="Germany", bands=["B02"], time_steps=2)
             self.assertEqual(dict(ds.sizes), {"index": 9, "time_step": 2, "band": 1})
             np.testing.assert_allclose(ds["sample"].values[0, :, 0], [3, 8])
             self.assertTrue(np.isnan(ds["sample"].values[2]).all())
+            masked = load_dataset(root, country="Germany", bands=["B02"], time_steps=2, cloud_mask=True)
+            self.assertTrue(np.isnan(masked['sample'].values[0]).all())
+            np.testing.assert_allclose(masked['sample'].values[1], ds['sample'].values[1])
+            np.testing.assert_array_equal(masked.target, ds.target)
             self.assertEqual(len(np.unique(ds.field_shared_name)), 2)
             self.assertEqual(len(YieldSATDataset(ds, band=None)), 3)
             for training, validation in split_dataset_by_group(ds, 2):
@@ -230,9 +239,15 @@ class GNNLSTMTests(unittest.TestCase):
                 parameter.zero_()
         expected_mse = float(np.mean(ds.target.values ** 2))
         optimizer = torch.optim.SGD(model.parameters(), lr=0)
-        actual = model_training(model, loader, torch.nn.MSELoss(), optimizer, "cpu")
+        stats = {}
+        actual = model_training(model, loader, torch.nn.MSELoss(), optimizer, "cpu", stats=stats)
         self.assertTrue(model.training)
         self.assertAlmostEqual(actual, expected_mse, places=5)
+        self.assertAlmostEqual(stats['train_rmse'], np.sqrt(expected_mse), places=5)
+        targets64 = ds.target.values.astype(np.float64)
+        expected_r2 = 1 - np.sum(targets64 ** 2) / np.sum((targets64 - targets64.mean()) ** 2)
+        self.assertAlmostEqual(stats['train_r2'], expected_r2, places=4)
+        self.assertEqual(stats['train_pixels'], 4)
         frame, _ = model_validation(model, loader, torch.nn.MSELoss(), "cpu")
         self.assertFalse(model.training)
         self.assertAlmostEqual(frame.attrs["mse"], expected_mse, places=5)

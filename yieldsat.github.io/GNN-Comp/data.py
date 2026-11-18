@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import json
+import re
 
 import numpy as np
 import pandas as pd
@@ -10,13 +11,36 @@ import xarray as xr
 from torch.utils.data import Dataset
 
 from graphs import build_grid_graph
+from preprocessing import SpectralTransform
 
 DEFAULT_BANDS = ("B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B09", "B11", "B12")
+DEFAULT_SCL_EXCLUDE = (0, 1, 3, 8, 9, 10, 11)
+
+
+def canonicalize_metadata(dataset):
+    """Decode official NetCDF categories, then share field identities across seasons."""
+    for key in ('field_shared_name', 'year'):
+        array = dataset[key]
+        mapping = {str(k): v for k, v in array.attrs.items()}
+        if array.dtype.kind not in 'OUS' and mapping:
+            codes = np.unique(array.values)
+            if not all(str(code) in mapping for code in codes):
+                raise ValueError(f'Incomplete encoded {key} mapping')
+            values = np.array([mapping[str(code)] for code in array.values])
+            dataset = dataset.assign({key: (array.dims, values)})
+    names = dataset.field_shared_name
+    if names.dtype.kind in 'OUS':
+        # Only known crop/year suffixes are removed; unrelated identifiers are preserved.
+        canonical = [re.sub(r'_(rapeseed|wheat|corn|soybean|soybeans)_\d{4}$', '', str(value)) for value in names.values]
+        dataset = dataset.assign(field_shared_name=('index', canonical))
+    return dataset
 
 
 def filter_ds_by_attribute(dataset, filter_variable="crop", condition=None):
     if condition is None:
         return dataset
+    if dataset[filter_variable].dtype.kind in "OUS":
+        return dataset.sel(index=dataset[filter_variable] == condition)
     mapping = {str(value): key for key, value in dataset[filter_variable].attrs.items()}
     if condition not in mapping:
         raise ValueError(f"Unknown {filter_variable} {condition!r}; available: {list(mapping)}")
@@ -24,7 +48,8 @@ def filter_ds_by_attribute(dataset, filter_variable="crop", condition=None):
     return dataset.sel(index=dataset[filter_variable] == value)
 
 
-def load_field_images(path, crop="rapeseed", bands=DEFAULT_BANDS, country="Germany", time_steps=24):
+def load_field_images(path, crop="rapeseed", bands=DEFAULT_BANDS, country="Germany", time_steps=24,
+                      cloud_mask=False, scl_exclude=DEFAULT_SCL_EXCLUDE):
     """Average dated S2 observations into equal bins from seeding to harvest."""
     import rasterio
     from rasterio.warp import reproject, Resampling
@@ -82,6 +107,17 @@ def load_field_images(path, crop="rapeseed", bands=DEFAULT_BANDS, country="Germa
                 values = source.read([labels.index(band) + 1 for band in bands], masked=True)
                 values = values.astype(np.float32).filled(np.nan)[:, rows, cols].T
             valid = np.isfinite(values)
+            if cloud_mask:
+                scl_path = folder / "scl_masks" / image.name.replace("S2_L2A_", "S2_L2A_SCL_")
+                if not scl_path.exists():
+                    raise ValueError(f"Cloud masking requested but SCL is missing: {scl_path}")
+                scl = np.full(shape, 0, dtype=np.uint8)
+                with rasterio.open(scl_path) as source:
+                    reproject(source=rasterio.band(source, 1), destination=scl,
+                              src_transform=source.transform, src_crs=source.crs,
+                              src_nodata=source.nodata, dst_transform=transform,
+                              dst_crs=crs, dst_nodata=0, resampling=Resampling.nearest)
+                valid &= ((scl[rows, cols] != 0) & ~np.isin(scl[rows, cols], scl_exclude))[:, None]
             sums[:, step] += np.where(valid, values, 0)
             counts[:, step] += valid
         samples = np.full_like(sums, np.nan)
@@ -107,14 +143,19 @@ def load_field_images(path, crop="rapeseed", bands=DEFAULT_BANDS, country="Germa
     return xr.concat(fields, dim="index")
 
 
-def load_dataset(path, crop="rapeseed", bands=DEFAULT_BANDS, country=None, time_steps=24):
+def load_dataset(path, crop="rapeseed", bands=DEFAULT_BANDS, country=None, time_steps=24,
+                 cloud_mask=False, scl_exclude=DEFAULT_SCL_EXCLUDE):
     """Select crop/features before loading, avoiding all 120 bands in memory."""
     if Path(path).is_dir():
-        return load_field_images(path, crop=crop, bands=bands, country=country, time_steps=time_steps)
+        return load_field_images(path, crop=crop, bands=bands, country=country, time_steps=time_steps,
+                                 cloud_mask=cloud_mask, scl_exclude=scl_exclude)
+    if cloud_mask:
+        raise ValueError("SCL cloud masking requires raw imagery; NetCDF preprocessing is preserved as supplied")
     with xr.open_dataset(Path(path)) as source:
         # Load small metadata first: scipy-backed string arrays cannot be fancy-indexed lazily.
-        if country is not None and "country" in source:
-            source["country"].load()
+        for name in ('country', 'crop', 'field_shared_name', 'year', 'row', 'col'):
+            if name in source:
+                source[name].load()
         selected = filter_ds_by_attribute(source, condition=crop)
         if country is not None:
             if "country" not in selected:
@@ -126,7 +167,7 @@ def load_dataset(path, crop="rapeseed", bands=DEFAULT_BANDS, country=None, time_
         if bands:
             selected = selected.sel(band=list(bands))
         variables = ["sample", "target", "field_shared_name", "year", "row", "col"]
-        return selected[variables].load()
+        return canonicalize_metadata(selected[variables].load())
 
 
 class YieldSATDataset(Dataset):
@@ -137,12 +178,10 @@ class YieldSATDataset(Dataset):
     """
 
     def __init__(self, data, fill_value=-1.0, band=DEFAULT_BANDS,
-                 indices=None, connectivity=8):
+                 indices=None, connectivity=8, transform=None):
         super().__init__()
         if isinstance(data, (str, Path)):
             data = load_dataset(data, crop=None, bands=band)
-        if indices is not None:
-            data = data.sel(index=list(indices))
         if band:
             data = data.sel(band=list(band))
         if data.sizes.get("index", 0) == 0:
@@ -150,16 +189,22 @@ class YieldSATDataset(Dataset):
         if not data.index.to_index().is_unique:
             raise ValueError("Pixel index labels must be unique")
         self.ds = data
+        self.transform = transform or SpectralTransform(fill_value=fill_value)
+        self.positions = np.arange(data.sizes['index']) if indices is None else data.index.to_index().get_indexer(indices)
+        if not len(self.positions) or (self.positions < 0).any():
+            raise ValueError("No pixels selected or unknown pixel indices")
+        if len(np.unique(self.positions)) != len(self.positions):
+            raise ValueError("Pixel index labels must be unique")
         self.fill_value = fill_value
-        self.num_features = data.sizes["band"]
+        self.num_features = data.sizes["band"] * (2 if self.transform.append_mask else 1)
         self.len_sequence = data.sizes["time_step"]
-        self.index_ids = data.index.values.astype(str).tolist()
+        self.index_ids = data.index.values[self.positions].astype(str).tolist()
         self.samples = data["sample"].transpose("index", "time_step", "band").values
-        self.targets = data["target"].transpose("index").values.astype(np.float32)
+        self.targets = data["target"].transpose("index").values[self.positions].astype(np.float32)
         if not np.isfinite(self.targets).all():
             raise ValueError("Yield targets must be finite")
         metadata = pd.DataFrame({
-            key: data[key].transpose("index").values
+            key: data[key].transpose("index").values[self.positions]
             for key in ("field_shared_name", "year", "row", "col")
         })
         if metadata.isna().any().any():
@@ -176,13 +221,12 @@ class YieldSATDataset(Dataset):
 
     def __getitem__(self, idx):
         positions, edges = self.graphs[idx]
-        sample = np.nan_to_num(
-            self.samples[positions].astype(np.float32), nan=self.fill_value,
-            posinf=self.fill_value, neginf=self.fill_value,
-        )
+        sample, time_mask = self.transform(self.samples[self.positions[positions]])
         metadata = self.metadata.iloc[positions]
         return {
             "sample": torch.from_numpy(sample),
+            "time_mask": torch.from_numpy(time_mask),
+            "positions": torch.as_tensor(metadata[['row', 'col']].to_numpy(dtype=np.int64)),
             "target": torch.from_numpy(self.targets[positions]),
             "edge_index": edges,
             "index": [self.index_ids[i] for i in positions],
