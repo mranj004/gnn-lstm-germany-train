@@ -40,9 +40,11 @@ def collate_graphs(graphs):
         raise ValueError("Cannot collate an empty batch")
     edges, indices, fields, years = [], [], [], []
     offset = 0
+    graph_ptr = [0]
     for graph in graphs:
         edges.append(graph["edge_index"] + offset)
         offset += graph["sample"].size(0)
+        graph_ptr.append(offset)
         indices.extend(graph["index"])
         fields.extend(graph["field_shared_name"])
         years.extend(graph["year"])
@@ -52,5 +54,6 @@ def collate_graphs(graphs):
         "positions": torch.cat([g["positions"] for g in graphs]) if all("positions" in g for g in graphs) else None,
         "target": torch.cat([g["target"] for g in graphs]),
         "edge_index": torch.cat(edges, dim=1),
+        "graph_ptr": torch.tensor(graph_ptr, dtype=torch.long),
         "index": indices, "field_shared_name": fields, "year": years,
     }

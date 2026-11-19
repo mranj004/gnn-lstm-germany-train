@@ -41,6 +41,71 @@ LSTM recurrence: masking affects pooling only and follows the pixel's own
 observations, even if neighbors are observed. `--export-attention` writes
 `attention_0`, etc. in held-out prediction CSVs.
 
+## 3D-CNN extensions
+
+Two additional models reconstruct a separate `[1, channels, time, rows, cols]`
+grid for each field/year, apply a learned `Conv3d`, then gather the encoded
+sequences at the original pixel coordinates:
+
+| Option | Flow |
+|---|---|
+| `--model 3d_gnn_lstm` | 3D CNN -> GNN -> LSTM -> yield |
+| `--model 3d_lstm` | 3D CNN -> LSTM -> yield (control without GNN) |
+
+The default encoder uses 64 channels and a `(1, 5, 5)` kernel, followed by
+batch normalization and LeakyReLU. This neighborhood encoder is inspired by
+the [Miranda et al. architecture cited by YieldSAT](https://www.dfki.de/fileadmin/user_upload/import/15127_Spatial-Fusion-Paper-Miranda-Pathak.pdf),
+which uses 5x5 spatial patches and preserves temporal length before the LSTM.
+It is not an exact reproduction of the published model: we retain the current
+LSTM/readout defaults, preprocessing, and grouped validation protocol.
+
+`--cnn-hidden-dim` sets output channels; `--cnn-kernel-size` sets the odd spatial
+width. `--cnn-temporal-kernel` defaults to 1; an odd value such as 3 additionally
+mixes adjacent time steps with symmetric padding. This optional temporal
+convolution is noncausal and uses the supplied complete season. Kernels retain
+the original time length and node order. Batch normalization is computed only
+over gathered nodes/time, not empty spatial cells; training statistics are shared
+across graphs in a batch, while evaluation uses saved running statistics.
+
+Only pixels already present in the field/year graph supply CNN context.
+Missing spatial cells and field boundaries use zero padding; completely
+unobserved pixel/time bins are zeroed before convolution. With `--normalize`,
+missing individual bands are already zero-filled by the fitted transform.
+Unlabelled image pixels are not recovered by this extension. CNN neighborhoods
+are independent of GNN connectivity: the default CNN sees all available pixels
+in a 5x5 window even with `--connectivity 4`. GNN edges remain within each graph.
+Attention masks retain their existing meaning (the central pixel's observations).
+
+The field grid is built on demand, so overlapping patches are not stored for
+every pixel in the dataset. Memory still grows with the field bounding rectangle,
+time length, and channel counts. `--cnn-max-grid-cells` defaults to 65,536 and
+rejects larger rectangles before allocating them; increase it only if memory
+permits. Batch size 1 is recommended initially. Large coordinate gaps are not
+compressed, because that would create false neighbors.
+
+`--residual` with `3d_gnn_lstm` concatenates the original transformed spectral
+inputs with GNN output before the LSTM, preserving the existing bypass meaning.
+The CNN options and normalization buffers are saved in checkpoints. Existing
+`gnn_lstm`/`lstm` defaults and checkpoint state layouts remain supported.
+
+Run on the workstation from `GNN-Comp`, reusing the established splits:
+
+```bash
+python train.py \
+  --model 3d_gnn_lstm --residual --normalize \
+  --epochs 50 --inner-val-fraction 0.2 --early-stopping-patience 15 \
+  --splits runs/residual/splits.json --seed 0 \
+  --export-training-predictions --plots \
+  --output-dir runs/3d_gnn_lstm_normalized_inner50
+```
+
+Compare this to the residual normalized GNN-LSTM to test adding the CNN.
+For the corresponding control without a GNN, use `--model 3d_lstm`, omit
+`--residual`, and choose a new output directory. Compare that control to the
+normalized plain LSTM. Keep data, outer splits, seed, and selection protocol
+fixed. These experiments establish whether the component helps; they do not
+assume it explains the remaining gap to the paper.
+
 ## Installation and input representations
 
 From the repository root:

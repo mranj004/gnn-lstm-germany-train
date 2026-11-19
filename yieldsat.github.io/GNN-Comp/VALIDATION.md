@@ -42,3 +42,23 @@ No full real-data cross-validation jobs were run. No official NetCDF or matched
 synthetic smoke outputs were held in temporary directories and removed by the
 test harness. These checks establish implementation behavior, not predictive
 superiority over any benchmark.
+
+## 3D-CNN extension validation (2026-11-19)
+
+The complete suite passed 34 tests on PyTorch 2.8.0 CPU, including seven new
+3D encoder tests. They check dense convolution against explicit per-pixel
+patches (outputs and gradients), spatial orientation, temporal kernel extent,
+node permutation/coordinate translation, padding at holes, overlapping grids
+in separate field/year graphs, and rejection of cross-graph GNN edges.
+Missing bins, isolated single-step pixels, grid allocation limits, and CLI
+validation are covered. Gradients reach CNN, GNN, and LSTM components, including
+the residual/directional/attention combination. Two-fold synthetic runs for
+both `3d_gnn_lstm` and `3d_lstm` verify inner selection, training exports, and
+checkpoint reload predictions. Existing model checkpoint defaults still work.
+
+A separate synthetic 60x60 field with holes (3,085 nodes, 24 steps, 12 bands)
+completed a forward/backward pass with the default residual 3D-GNN-LSTM:
+53,825 parameters, finite loss, and nonzero CNN gradients. With two CPU threads
+the measured pass took about 2.5 seconds; this is not a workstation benchmark.
+CLI help and `git diff --check` also passed. No GPU or full real-data training
+was performed for the new architecture; accuracy gains remain unmeasured.

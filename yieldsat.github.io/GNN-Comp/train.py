@@ -30,7 +30,8 @@ def forward_batch(model, batch, device, return_attention=False):
     mask = batch.get('time_mask')
     return model(batch['sample'].to(device), batch['edge_index'].to(device),
                  positions=None if positions is None else positions.to(device),
-                 time_mask=None if mask is None else mask.to(device), return_attention=return_attention)
+                 time_mask=None if mask is None else mask.to(device), return_attention=return_attention,
+                 graph_ptr=batch.get('graph_ptr'))
 
 
 def model_training(model, train_loader, criterion, optimizer, device,
@@ -121,7 +122,11 @@ def parse_args(argv=None):
     parser.add_argument("--crop", default="rapeseed", help="Crop label in crop.attrs")
     parser.add_argument("--bands", nargs="+", choices=DEFAULT_BANDS, default=list(DEFAULT_BANDS))
     parser.add_argument("--time-steps", type=int, default=24, help="Growing-season bins for raw S2 images")
-    parser.add_argument("--model", choices=("gnn_lstm", "lstm"), default="gnn_lstm")
+    parser.add_argument("--model", choices=("gnn_lstm", "lstm", "3d_gnn_lstm", "3d_lstm"), default="gnn_lstm")
+    parser.add_argument("--cnn-hidden-dim", type=int, default=64, help="3D CNN output channels")
+    parser.add_argument("--cnn-kernel-size", type=int, default=5, help="Odd spatial neighborhood width for 3D models")
+    parser.add_argument("--cnn-temporal-kernel", type=int, default=1, help="Odd temporal kernel; 1 preserves independent time steps before LSTM")
+    parser.add_argument("--cnn-max-grid-cells", type=int, default=65536, help="Maximum field bounding-grid area for 3D CNN allocation")
     parser.add_argument("--residual", action="store_true")
     parser.add_argument("--aggregation", choices=("mean", "directional"), default="mean")
     parser.add_argument("--temporal-pool", choices=("last", "attention"), default="last")
@@ -175,8 +180,12 @@ def parse_args(argv=None):
         parser.error("scheduler-patience must be positive and 0 < lr-factor < 1")
     if (args.early_stopping_patience or args.scheduler == "plateau") and not args.inner_val_fraction:
         parser.error("Early stopping and plateau scheduling require --inner-val-fraction > 0")
-    if args.model == 'lstm' and (args.residual or args.aggregation != 'mean'):
-        parser.error("Residual/directional options require --model gnn_lstm")
+    if args.cnn_hidden_dim < 1 or args.cnn_max_grid_cells < 1:
+        parser.error("cnn-hidden-dim and cnn-max-grid-cells must be positive")
+    if any(k < 1 or k % 2 == 0 for k in (args.cnn_kernel_size, args.cnn_temporal_kernel)):
+        parser.error("CNN kernel sizes must be positive odd integers")
+    if args.model in ('lstm', '3d_lstm') and (args.residual or args.aggregation != 'mean'):
+        parser.error("Residual/directional options require a GNN model")
     if (args.attention_mask or args.export_attention) and args.temporal_pool != 'attention':
         parser.error("Attention masks/exports require --temporal-pool attention")
     for name in ("data", "output_dir"):
@@ -258,6 +267,8 @@ def run_cross_validation(args):
             gnn_layers=args.gnn_layers, dropout=args.dropout, model_type=args.model,
             residual=args.residual, aggregation=args.aggregation,
             temporal_pool=args.temporal_pool, attention_mask=args.attention_mask,
+            cnn_hidden_dim=args.cnn_hidden_dim, cnn_kernel_size=args.cnn_kernel_size,
+            cnn_temporal_kernel=args.cnn_temporal_kernel, cnn_max_grid_cells=args.cnn_max_grid_cells,
         )
         model = GNN_LSTM_Model(**model_config).to(device)
         criterion = torch.nn.MSELoss()
