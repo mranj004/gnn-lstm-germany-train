@@ -10,11 +10,12 @@ differences. Synthetic tests do not establish real-data accuracy improvements.
 |---|---|
 | Default `--model gnn_lstm` | S2 → two mean-message GNN layers → LSTM → final state → linear yield |
 | `--model lstm` | S2 → LSTM → final state → linear yield |
+| `--model lstm_gnn` | S2 → LSTM → seasonal summary → GNN → additive yield correction |
 | `--residual` | Concatenate original inputs and GNN embeddings before the LSTM |
 | `--temporal-pool attention` | Learned softmax pooling of LSTM outputs before readout |
 | `--aggregation directional` | Direction-specific neighbor transforms |
 
-Defaults: 32 GNN channels, 64 LSTM hidden channels, two GNN layers, one LSTM
+Defaults: 32 GNN channels, 64 LSTM hidden channels, two GNN layers (one for `lstm_gnn`), one LSTM
 layer, dropout 0.1. Configure with `--gnn-hidden-dim`, `--hidden-dim`,
 `--gnn-layers`, `--lstm-layers`, and `--dropout`. Residual concatenation adjusts
 LSTM input size automatically and includes observation masks if appended.
@@ -40,6 +41,51 @@ zero weights/context and the readout bias. Missing steps still pass through the
 LSTM recurrence: masking affects pooling only and follows the pixel's own
 observations, even if neighbors are observed. `--export-attention` writes
 `attention_0`, etc. in held-out prediction CSVs.
+
+## LSTM followed by GNN
+
+`--model lstm_gnn` processes each pixel's sequence independently with a shared
+LSTM, then exchanges seasonal summaries between spatial neighbors. The default
+summary is the final LSTM state; attention pooling is also supported. For N pixels
+and the default dimensions, the flow is `[N, 24, 12] -> [N, 64] -> [N, 32] -> [N]`.
+
+The prediction includes a direct LSTM readout plus a learned correction:
+
+```text
+h = LSTM summary of each pixel's sequence
+z = GNN(h, within-field/year edges)
+yield = Linear(h) + Linear(z)
+```
+
+The correction readout starts at zero, so initial predictions use the direct
+LSTM path. All parameters are trained jointly from scratch; this does not load
+an existing LSTM checkpoint. The correction head learns first, and gradients
+reach the GNN once that head's weights become nonzero. GNN layers use the existing
+self/neighbor transforms, ReLU, and dropout. One layer is the default; override
+with `--gnn-layers`. `--aggregation directional` is supported. Targets never enter
+the neighbor messages. An isolated pixel retains its self transform, so the
+correction is not restricted to neighbor information alone.
+
+The additive path is built in: omit `--residual`, which retains its original
+input-concatenation meaning for GNN-before-LSTM models and is rejected here.
+With masked attention, a completely unobserved pixel has a zero temporal summary
+but can still receive neighbor information in the subsequent GNN. Exported
+attention weights describe temporal pooling, not spatial importance.
+
+From `GNN-Comp`, reuse the same outer splits as the normalized plain LSTM:
+
+```bash
+python train.py \
+  --model lstm_gnn --normalize \
+  --epochs 50 --inner-val-fraction 0.2 --early-stopping-patience 15 \
+  --splits runs/residual/splits.json --seed 0 \
+  --export-training-predictions --plots \
+  --output-dir runs/lstm_gnn_normalized_inner50
+```
+
+Use a new output directory. Compare held-out metrics with the existing plain
+LSTM using identical data, splits, and selection settings. This architecture is
+an experiment; synthetic checks do not establish an accuracy improvement.
 
 ## 3D-CNN extensions
 

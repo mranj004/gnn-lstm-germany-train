@@ -1,4 +1,4 @@
-"""Spatial message-passing GNN followed by a temporal LSTM, using only PyTorch."""
+"""Temporal LSTM and spatial message-passing yield models, using only PyTorch."""
 
 import torch
 from torch import nn
@@ -148,17 +148,22 @@ class GNN_LSTM_Model(nn.Module):
     """
 
     def __init__(self, input_dim, hidden_dim=64, num_layers=1,
-                 gnn_hidden_dim=32, gnn_layers=2, dropout=0.1, model_type="gnn_lstm",
+                 gnn_hidden_dim=32, gnn_layers=None, dropout=0.1, model_type="gnn_lstm",
                  residual=False, aggregation="mean", temporal_pool="last", attention_mask=False,
                  cnn_hidden_dim=64, cnn_kernel_size=5, cnn_temporal_kernel=1, cnn_max_grid_cells=65536):
         super().__init__()
+        if gnn_layers is None:
+            gnn_layers = 1 if model_type == "lstm_gnn" else 2
         if min(input_dim, hidden_dim, num_layers, gnn_hidden_dim, gnn_layers) < 1:
             raise ValueError("Model dimensions and layer counts must be positive")
         self.input_dim = input_dim
-        if model_type not in ("gnn_lstm", "lstm", "3d_gnn_lstm", "3d_lstm"):
+        if model_type not in ("gnn_lstm", "lstm", "3d_gnn_lstm", "3d_lstm", "lstm_gnn"):
             raise ValueError("Unknown model_type")
         self.model_type = model_type
-        has_gnn = model_type in ("gnn_lstm", "3d_gnn_lstm")
+        self.temporal_first = model_type == "lstm_gnn"
+        has_gnn = model_type in ("gnn_lstm", "3d_gnn_lstm", "lstm_gnn")
+        if residual and self.temporal_first:
+            raise ValueError("lstm_gnn already includes an additive LSTM prediction path; omit residual")
         if residual and not has_gnn:
             raise ValueError("Residual concatenation requires a GNN")
         self.residual = residual
@@ -175,14 +180,16 @@ class GNN_LSTM_Model(nn.Module):
                                 cnn_temporal_kernel, cnn_max_grid_cells)
                     if model_type.startswith('3d_') else None)
         spatial_input_dim = cnn_hidden_dim if self.cnn is not None else input_dim
+        gnn_input_dim = hidden_dim if self.temporal_first else spatial_input_dim
         layer_type = MessagePassingGNN if aggregation == "mean" else DirectionalGNN
         self.gnn = nn.ModuleList([
-            layer_type(spatial_input_dim if i == 0 else gnn_hidden_dim, gnn_hidden_dim)
+            layer_type(gnn_input_dim if i == 0 else gnn_hidden_dim, gnn_hidden_dim)
             for i in range(gnn_layers if has_gnn else 0)
         ])
         self.dropout = nn.Dropout(dropout)
         self.lstm = nn.LSTM(
-            input_size=(gnn_hidden_dim + (input_dim if residual else 0)) if self.gnn else spatial_input_dim,
+            input_size=(gnn_hidden_dim + (input_dim if residual else 0))
+                       if self.gnn and not self.temporal_first else spatial_input_dim,
             hidden_size=hidden_dim,
             num_layers=num_layers, batch_first=True,
             dropout=dropout if num_layers > 1 else 0.0,
@@ -190,6 +197,12 @@ class GNN_LSTM_Model(nn.Module):
         self.fc = nn.Linear(hidden_dim, 1)
         # A shared scalar bias cancels in a temporal softmax, so omit it.
         self.attention = nn.Linear(hidden_dim, 1, bias=False) if temporal_pool == "attention" else None
+        self.spatial_fc = nn.Linear(gnn_hidden_dim, 1) if self.temporal_first else None
+        if self.spatial_fc is not None:
+            # Begin with the direct LSTM prediction; learn a spatial correction.
+            # GNN gradients start once this head's weights move away from zero.
+            nn.init.zeros_(self.spatial_fc.weight)
+            nn.init.zeros_(self.spatial_fc.bias)
 
     def forward(self, x, edge_index, positions=None, time_mask=None, return_attention=False, graph_ptr=None):
         if x.ndim != 3 or x.size(-1) != self.input_dim or min(x.shape[:2]) < 1:
@@ -199,6 +212,18 @@ class GNN_LSTM_Model(nn.Module):
         adjacency = mean_neighbor_adjacency(edge_index, x.size(0), x.dtype) if self.gnn else None
         if self.gnn and self.aggregation == "directional":
             adjacency = directional_adjacencies(adjacency, positions)
+        if self.temporal_first and graph_ptr is not None:
+            if graph_ptr.ndim != 1 or graph_ptr.dtype != torch.long:
+                raise ValueError("graph_ptr must be a one-dimensional int64 tensor")
+            boundaries = graph_ptr.tolist()
+            if (len(boundaries) < 2 or boundaries[0] != 0 or boundaries[-1] != x.size(0)
+                    or any(a >= b for a, b in zip(boundaries, boundaries[1:]))):
+                raise ValueError("graph_ptr must partition all nodes into nonempty graphs")
+            boundaries = graph_ptr.to(device=x.device)
+            graph_ids = torch.repeat_interleave(torch.arange(len(boundaries) - 1, device=x.device),
+                                               boundaries[1:] - boundaries[:-1])
+            if (graph_ids[edge_index[0]] != graph_ids[edge_index[1]]).any():
+                raise ValueError("GNN edges must not cross field/year graph boundaries")
         original = x
         if self.cnn is not None:
             x = self.cnn(x, positions, graph_ptr, time_mask)
@@ -208,8 +233,9 @@ class GNN_LSTM_Model(nn.Module):
                                                    boundaries[1:] - boundaries[:-1])
                 if (graph_ids[edge_index[0]] != graph_ids[edge_index[1]]).any():
                     raise ValueError("GNN edges must not cross field/year graph boundaries")
-        for layer in self.gnn:
-            x = self.dropout(torch.relu(layer(x, adjacency)))
+        if not self.temporal_first:
+            for layer in self.gnn:
+                x = self.dropout(torch.relu(layer(x, adjacency)))
         if self.residual:
             x = torch.cat([original, x], dim=-1)
         out, _ = self.lstm(x)
@@ -228,4 +254,9 @@ class GNN_LSTM_Model(nn.Module):
                 weights = torch.softmax(scores, dim=1)
             context = (out * weights.unsqueeze(-1)).sum(dim=1)
         prediction = self.fc(context).squeeze(-1)
+        if self.temporal_first:
+            spatial = context
+            for layer in self.gnn:
+                spatial = self.dropout(torch.relu(layer(spatial, adjacency)))
+            prediction = prediction + self.spatial_fc(spatial).squeeze(-1)
         return (prediction, weights) if return_attention else prediction

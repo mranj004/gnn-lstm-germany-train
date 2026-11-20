@@ -122,7 +122,7 @@ def parse_args(argv=None):
     parser.add_argument("--crop", default="rapeseed", help="Crop label in crop.attrs")
     parser.add_argument("--bands", nargs="+", choices=DEFAULT_BANDS, default=list(DEFAULT_BANDS))
     parser.add_argument("--time-steps", type=int, default=24, help="Growing-season bins for raw S2 images")
-    parser.add_argument("--model", choices=("gnn_lstm", "lstm", "3d_gnn_lstm", "3d_lstm"), default="gnn_lstm")
+    parser.add_argument("--model", choices=("gnn_lstm", "lstm", "3d_gnn_lstm", "3d_lstm", "lstm_gnn"), default="gnn_lstm")
     parser.add_argument("--cnn-hidden-dim", type=int, default=64, help="3D CNN output channels")
     parser.add_argument("--cnn-kernel-size", type=int, default=5, help="Odd spatial neighborhood width for 3D models")
     parser.add_argument("--cnn-temporal-kernel", type=int, default=1, help="Odd temporal kernel; 1 preserves independent time steps before LSTM")
@@ -146,7 +146,8 @@ def parse_args(argv=None):
     parser.add_argument("--hidden-dim", type=int, default=64)
     parser.add_argument("--lstm-layers", type=int, default=1)
     parser.add_argument("--gnn-hidden-dim", type=int, default=32)
-    parser.add_argument("--gnn-layers", type=int, default=2)
+    parser.add_argument("--gnn-layers", type=int, default=None,
+                        help="GNN layers: defaults to 1 for lstm_gnn, 2 otherwise")
     parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--connectivity", type=int, choices=(4, 8), default=8)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
@@ -168,6 +169,12 @@ def parse_args(argv=None):
     parser.add_argument("--output-dir", type=Path, default=Path("runs/germany_rapeseed_s2"),
                         help="New output directory; relative to this script")
     args = parser.parse_args(argv)
+    if args.gnn_layers is None:
+        args.gnn_layers = 1 if args.model == 'lstm_gnn' else 2
+    if args.gnn_layers < 1:
+        parser.error("gnn-layers must be positive")
+    if args.model == 'lstm_gnn' and args.residual:
+        parser.error("lstm_gnn already includes an additive LSTM prediction path; omit --residual")
     if args.epochs < 1 or args.batch_size < 1 or args.num_workers < 0 or args.learning_rate <= 0:
         parser.error("epochs, batch-size and learning-rate must be positive; num-workers must be nonnegative")
     if args.time_steps < 1:
